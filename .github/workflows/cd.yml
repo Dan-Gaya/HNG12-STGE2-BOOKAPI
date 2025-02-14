@@ -1,15 +1,18 @@
 name: CD - Deploy to EC2
 
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - main  # This ensures CD triggers only when a PR is merged to the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
       - name: SSH and Deploy
         uses: appleboy/ssh-action@v0.1.4
         with:
@@ -18,8 +21,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd fastapi-app
-            git pull origin main
-            source venv/bin/activate
-            pip install -r requirements.txt
-            sudo systemctl restart fastapi
-            sudo systemctl restart nginx
+            git pull origin main  # Pull the latest changes from the main branch
+            source venv/bin/activate  # Activate the virtual environment
+            pip install -r requirements.txt  # Install any dependencies
+            sudo systemctl restart fastapi  # Restart the FastAPI service
+            sudo systemctl restart nginx  # Restart Nginx to apply any changes
